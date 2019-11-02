@@ -1,56 +1,48 @@
-import React from "react"
-import axios from "axios"
+import React, { useState } from "react"
 import api from "../utils/api"
 
-export default function Signin(props) {
-	console.log("signin")
-	const [error, setError] = React.useState("")
-	const [user, setUser] = React.useState({
-		email: "jane@doe.com",
-		password: "abc123",
+function Signin(props) {
+	const [error, setError] = useState()
+	const [data, setData] = useState({
+		email: "",
+		password: "",
 	})
 
 	const handleChange = (event) => {
-		setUser({
-			...user,
+		setData({
+			...data,
 			[event.target.name]: event.target.value,
 		})
 	}
 
-	const handleSubmit = (e) => {
-		console.log("handleSubmit props", props)
-		e.preventDefault()
+	const handleSubmit = (event) => {
+		event.preventDefault()
+
+		// We are using are axios instance with predefined values,
+		// rather than just plain old axios
 		api()
-			.post("/signin", user)
-			.then((res) => {
-				localStorage.setItem("token", res.data.token)
-				setUser({ email: "", password: "" })
-				console.log(res.data.token)
+			.post("/signin", data)
+			.then(result => {
+				// Store our new token in local storage so it persists
+				localStorage.setItem("token", result.data.token)
+				// Redirect the user to their account page after logging in
 				props.history.push("/account")
 			})
-			.catch((err) => {
+			.catch(err => {
 				setError(err.response.data.message)
 			})
 	}
+
 	return (
 		<form onSubmit={handleSubmit}>
 			{error && <div className="error">{error}</div>}
-			<input
-				type="email"
-				name="email"
-				placeholder="email"
-				value={user.email}
-				onChange={(e) => handleChange(e)}
-			/>
-			<input
-				type="password"
-				name="password"
-				placeholder="password"
-				value={user.password}
-				onChange={(e) => handleChange(e)}
-			/>
+
+			<input type="email" name="email" placeholder="Email" value={data.email} onChange={handleChange} />
+			<input type="password" name="password" placeholder="Password" value={data.password} onChange={handleChange} />
 
 			<button type="submit">Sign In</button>
 		</form>
 	)
 }
+
+export default Signin

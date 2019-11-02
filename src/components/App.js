@@ -1,36 +1,30 @@
 import "./App.css"
 import React from "react"
 import { Link, Route, withRouter } from "react-router-dom"
-import ProtectedRoute from "./ProtectedRoute"
 import { getToken } from "../utils/api"
-
+import ProtectedRoute from "./ProtectedRoute"
 import Signin from "./Signin"
 import Account from "./Account"
 import Logout from "./Logout"
 
-function App(props) {
+function App() {
+	const signedIn = getToken()
+
 	return (
 		<div className="wrapper">
 			<nav>
 				<Link to="/">Home</Link>
-				{!getToken() && <Link to="/signin">Sign In</Link>}
-				{getToken() && <Link to="/account">My Account</Link>}
-				{getToken() && <Link to="/logout">Logout</Link>}
+
+				{/* We can conditionally show links if logged in or not */}
+				{!signedIn && <Link to="/signin">Sign In</Link>}
+				{signedIn && <Link to="/account">My Account</Link>}
+				{signedIn && <Link to="/logout">Logout</Link>}
 			</nav>
 
-			<Route exact path="/signin" render={(props) => <Signin {...props} />} />
-			<ProtectedRoute
-				path="/account"
-				// component={Account}
-				render={(props) => <Account {...props} />}
-				{...props} //Need to spread props for Router Props
-			/>
-			<ProtectedRoute
-				path="/logout"
-				// component={Logout}
-				render={(props) => <Logout {...props} />}
-				{...props}
-			/>
+			<Route exact path="/signin" component={Signin} />
+			{/* These routes will require an auth token to be set, due to our handy HOC */}
+			<ProtectedRoute exact path="/account" component={Account} />
+			<ProtectedRoute exact path="/logout" component={Logout} />
 		</div>
 	)
 }
